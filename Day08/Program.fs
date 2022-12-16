@@ -1,5 +1,4 @@
-﻿// For more information see https://aka.ms/fsharp-console-apps
-type TreePosition = { Height: int; X: int; Y: int }
+﻿type TreePosition = { Height: int; X: int; Y: int }
 
 let input =
     System.IO.File.ReadLines("input.txt")
@@ -20,8 +19,6 @@ let isEdgeTree tree maxX maxY =
 
 let (maxX, maxY) =
     ((Array.map (fun x -> x.Y) >> Array.max) input, (Array.map (fun x -> x.X) >> Array.max) input)
-
-//Array.iter (fun x -> printfn "%d %d %d" x.X x.Y x.Height) input
 
 let isVisible (tree: TreePosition) (treeMap: TreePosition[]) =
 
@@ -59,27 +56,42 @@ let folderA (state: List<TreePosition> * TreePosition[]) (tree: TreePosition) =
     else
         state
 
-let clearingDistance (tree: TreePosition) (treeSubset: TreePosition[])  =
-        let result =  Array.takeWhile (fun x -> x.Height < tree.Height) treeSubset
-        let issNotEdge tree = not (isEdgeTree tree maxX maxY)
-        let length =  Array.length result
-        let last = Array.tryLast result
-        if last <> None then
-            if issNotEdge last.Value then
-                length + 1
-            else length
-        else  
-                1
-    
+let clearingDistance (tree: TreePosition) (treeSubset: TreePosition[]) =
+    let result = Array.takeWhile (fun x -> x.Height < tree.Height) treeSubset
+    let issNotEdge tree = not (isEdgeTree tree maxX maxY)
+    let length = Array.length result
+    let last = Array.tryLast result
 
-    
+    if last <> None then
+        if issNotEdge last.Value then length + 1 else length
+    else
+        1
 
 let folderB (state: TreePosition[] * int) (tree: TreePosition) =
- //   let clearingDistanceFn = clearingDistance tree (fst state)
-    let forward = clearingDistance tree (Array.where (fun x -> x.X = tree.X && x.Y < tree.Y) (fst state) |> Array.sortByDescending (fun x -> x.Y))
-    let downward = clearingDistance tree (Array.where (fun x -> x.X = tree.X && x.Y > tree.Y) (fst state) |> Array.sortBy (fun x -> x.Y))
-    let left = clearingDistance tree (Array.where (fun x -> x.X < tree.X && x.Y = tree.Y) (fst state) |> Array.sortByDescending (fun x -> x.X))
-    let right = clearingDistance tree (Array.where (fun x -> x.X > tree.X && x.Y = tree.Y) (fst state) |> Array.sortBy(fun x -> x.X))
+    let forward =
+        clearingDistance
+            tree
+            (Array.where (fun x -> x.X = tree.X && x.Y < tree.Y) (fst state)
+             |> Array.sortByDescending (fun x -> x.Y))
+
+    let downward =
+        clearingDistance
+            tree
+            (Array.where (fun x -> x.X = tree.X && x.Y > tree.Y) (fst state)
+             |> Array.sortBy (fun x -> x.Y))
+
+    let left =
+        clearingDistance
+            tree
+            (Array.where (fun x -> x.X < tree.X && x.Y = tree.Y) (fst state)
+             |> Array.sortByDescending (fun x -> x.X))
+
+    let right =
+        clearingDistance
+            tree
+            (Array.where (fun x -> x.X > tree.X && x.Y = tree.Y) (fst state)
+             |> Array.sortBy (fun x -> x.X))
+
     let scenicScore = forward * downward * left * right
     printfn "f:%d b:%d l:%d r:%d  scenic score %d  x:%d y%d" forward downward left right scenicScore tree.X tree.Y
 
@@ -96,7 +108,6 @@ let resultB =
      >> snd)
         input
 
-//List.iter (fun x -> printfn "%d %d %d" x.X x.Y x.Height) result
 let resultCount = List.length result
 printfn "%d" resultCount
 printfn "%d" resultB
