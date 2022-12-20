@@ -29,7 +29,15 @@ let root = { Name = "/"; Size = 0 }
 let result =  (Seq.fold terminalFolder ([root], []) input) 
 let combinedResult = fst result@snd result 
 
-List.iter (fun x -> printfn "%d %s" x.Size x.Name)  (fst result@snd result)
+//List.iter (fun x -> printfn "%d %s" x.Size x.Name)  (fst result@snd result)
 let total = (List.where (fun x -> x.Size <= 100000) >>  List.sumBy (fun x -> x.Size))combinedResult
-printfn "%d" total
+let rootNode = (List.where (fun x -> x.Name = "/") >> List.head) combinedResult 
+let unusedSpace = 70000000 - rootNode.Size
+let requiredSpace = 30000000 - unusedSpace
+let spaceyDirs = List.where (fun x -> x.Size >= requiredSpace) combinedResult
+let minDir = List.minBy (fun x -> x.Size) spaceyDirs
+List.iter (fun x -> printfn "%d %s" x.Size x.Name) spaceyDirs
+printfn "unused space %d" (requiredSpace)
+printfn "littlest dir %d" minDir.Size
+//printfn "%d" total
 
