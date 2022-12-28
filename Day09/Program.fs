@@ -4,48 +4,51 @@ let input = System.IO.File.ReadLines("input.txt")
 
 type Position = { X: int; Y: int }
 type Rope = { Head: Position; Tail: Position }
-let isHorizontal (rope: Rope) = rope.Head.Y = rope.Tail.Y
+
+let move origin letter =
+    match letter with
+    | "R" -> { X = origin.X + 1; Y = origin.Y }
+    | "L" -> { X = origin.X - 1; Y = origin.Y }
+    | "U" -> { X = origin.X; Y = origin.Y + 1 }
+    | "D" -> { X = origin.X; Y = origin.Y - 1 }
+    | _ -> origin
+
+
+let moveRope direction (r: Rope)(knotCount:int) =
+    let head = move r.Head direction
+
+    let xDiff = head.X - r.Tail.X
+    let yDiff = head.Y - r.Tail.Y
+  //  let rippleFolder (prevPos:Position) =  
+
+    match (xDiff, yDiff) with
+    | (2, _) ->
+        { Head = head
+          Tail = { X = head.X - 1; Y = head.Y } }
+    | (-2, _) ->
+        { Head = head
+          Tail = { X = head.X + 1; Y = head.Y } }
+    | (_, 2) ->
+        { Head = head  
+          Tail = { X = head.X; Y = head.Y - 1 } }
+    | (_, -2) ->
+        { Head = head
+          Tail = { X = head.X; Y = head.Y + 1 } }
+    | (_, _) -> { Head = head; Tail = r.Tail }
 
 let folder (state: (List<Position>) * Rope) (line: string) =
     let parts = line.Split(' ')
+    let direction = parts[0]
     let displacement = int parts[1]
-    let (trail, rope) = state
+    let (points, rope) = state
 
-    if parts[0] = "R" || parts[0] = "L" then
-        let multiplier = if parts[0] = "R" then 1 else -1
+    let ropes =
+        [ 0..displacement-1 ]
+        |> List.scan (fun (state: Rope) _ -> (moveRope direction state 1)) rope
 
-        if isHorizontal rope then
-            let ropeDisplacement = (rope.Head.X - rope.Tail.X)
+    let tlPoints = List.map (fun x -> x.Tail) ropes 
+    (points @ tlPoints, List.last ropes)
 
-            let tailDisplacement =
-                multiplier
-                * if ropeDisplacement < 0 then displacement - 2
-                  else if ropeDisplacement = 0 then displacement - 1
-                  else displacement
-
-            let items =
-                [ rope.Tail.X .. (rope.Tail.X + tailDisplacement - 1) ]
-                |> List.map (fun x -> { X = x; Y = rope.Head.Y })
-
-            (trail @ items,
-             { Head =
-                 { X = rope.Head.X + displacement
-                   Y = rope.Head.Y }
-               Tail =
-                 { Y = rope.Tail.Y
-                   X = rope.Tail.X + tailDisplacement } })
-        else
-            let tailX = rope.Head.X + displacement - 2
-            let hdX = rope.Head.X + displacement - 1
-
-            let points =
-                [ rope.Head.X .. (tailX) ] |> List.map (fun x -> { X = x; Y = rope.Head.Y })
-
-            (points,
-             { Head = { X = hdX; Y = rope.Head.Y }
-               Tail = { X = tailX; Y = rope.Head.Y } })
-    else
-        state
 
 
 let result =
@@ -56,6 +59,10 @@ let result =
            Tail = { X = 0; Y = 0 } })
         input
 
-List.iter (fun x -> printfn "%d %d" x.X x.Y) (fst result)
-printfn "%d" ((fst >> List.length) result)
-printfn "Hello from F#"
+let count = List.length (fst result |> List.distinct)
+List.iter (fun x -> printfn "X:%d Y:%d" x.X x.Y) (fst result |> List.distinct)
+
+
+
+
+printfn "Count = %d" count
