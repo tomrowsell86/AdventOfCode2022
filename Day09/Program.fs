@@ -29,17 +29,15 @@ let rec adjustTail (rope:list<Position>*list<Position>) =
             | (_, -2) -> { X = hd.X; Y = hd.Y + 1 }
             | (_, _) -> hd2
 
-        adjustTail ((nextKnot :: tl), hd::(snd rope) )
-    | [ last ] -> last::(snd rope)
+        adjustTail ((nextKnot :: tl), (snd rope) @ [hd] )
+    | [ last ] -> (snd rope) @ [last]
     | [] -> raise (invalidArg "knots" "empty list provided")
 
 let moveRopeBOuter direction (rope:list<Position>) = 
    match rope with
         | hd::tl -> 
             let head = move hd direction
-            let result = adjustTail (head::tl, [])
-            let res2 = List.rev result
-            res2
+            adjustTail (head::tl, [])
         | [] -> raise (invalidArg "rope" "should nae be empty")
 
 
