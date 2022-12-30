@@ -1,9 +1,5 @@
 ﻿let input = System.IO.File.ReadLines("input.txt")
 
-type CycleState =
-    { CurrentCycle: int
-      ExecutingCmd: string }
-
 let (|NoOp|Add|) (cmd: string) =
     let (parts: string[]) = cmd.Split(' ')
 
@@ -55,8 +51,10 @@ let renderFolder (state: list<string> * list<char>) cycleRegister =
     else
         (rows, currentRow @ [ pixel ])
 
-List.iter (fun (c, r) -> printfn " cycle : %d reg: %d" c r) result
 let (rows, _) = List.fold renderFolder ([], []) ((List.rev result))
+
 List.iter (fun x -> printfn "%s" x) rows
+
 let signalSum = List.map mapToRecordingCycle result |> List.sum
+
 printfn "Signal is %d" signalSum
