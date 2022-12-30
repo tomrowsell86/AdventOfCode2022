@@ -13,7 +13,7 @@ let (|NoOp|Add|) (cmd: string) =
     | _ -> NoOp
 
 let mapToRecordingCycle (cycle, register) =
-    //cycles are being emitted after they have ran so need to -1 to get the in prgress reg value for a given cycle
+    //reg value updated after they cycles have ran so need to -1 to get the in progress reg value for a given cycle
     let ranges = [ 19..40..219 ]
 
 
@@ -38,13 +38,39 @@ let folder (state: List<int * int> * int) (line: string) =
 
     match (line) with
     | NoOp -> (((currentCycle, registerVal) :: registerCycleMap), currentCycle + 1)
-    
     | Add op ->
         ([ (currentCycle + 1, registerVal + op); ((currentCycle, registerVal)) ]
          @ registerCycleMap,
          currentCycle + 2)
 
 let (result, _) = Seq.fold folder ([], 1) input
+
+let isOnSprite rowLength registerVal  = 
+    match rowLength+1 - registerVal with
+    | 1 | 0 | -1 -> true
+
+    | _ -> false
+
+let renderFolder (state:list<string>*list<char>) cycleRegister = 
+    let (_, regValue) = cycleRegister
+    let (rows,currentRow) = state
+    let rowLength = List.length currentRow
+    let pixel = 
+        if (isOnSprite (rowLength) regValue) then
+            '#'
+        else
+            '.'
+    if rowLength = 39 then
+        let newRow = new string(Array.ofList (currentRow@[pixel]))
+        (rows@[newRow], [])
+    else
+        (rows, currentRow@[pixel])
+
+
+
+
 List.iter (fun (c, r) -> printfn " cycle : %d reg: %d" c r) result
+let (rows,_) = List.fold renderFolder ([],[]) ((List.rev result)) 
+List.iter (fun x -> printfn "%s" x) rows
 let signalSum = List.map mapToRecordingCycle result |> List.sum
 printfn "Signal is %d" signalSum
