@@ -3,15 +3,28 @@ open System
 let splitEnum =
     StringSplitOptions.TrimEntries
 
-type Round =
+type Turn =
     { Id: char
       Operation: int -> int
       Test: int -> (bool * int)
       TrueDestination: char
       FalseDestination: char }
 
-let splitInstructionBlocks (input: string) =
-    input.Split(Environment.NewLine + Environment.NewLine, (splitEnum))
+//let splitInstructionBlocks (input: string) =
+  //  input.Split(Environment.NewLine + Environment.NewLine, (splitEnum))
+
+let splitFolder (splitVal:'a) (state:list<list<'a>>*list<'a>) (current:'a)  =
+    let (result, currentGroup) = state
+    if current = splitVal then  
+        (currentGroup::result, [])
+    else
+        (result, current::currentGroup)
+
+let splitBy input by = 
+    let (result,_) = Seq.fold (splitFolder by) ([],[]) input
+    result
+let splitInstructionBlocks (input: seq<string>) =
+    splitBy input ""
 
 let (|Integer|_|) (input: string) =
     let mutable x = 0
@@ -52,9 +65,9 @@ let parseTest (input: string) =
 
 let parseTestOutcomeDest (outcome: string) = Array.last (outcome.ToCharArray())
 
-let parseRound (block: string[]) =
+let parseTurn (block: string[]) =
     match block with
-    | [| id; _; operation; test; trueDest; falseDest |] ->
+    | [| id; startingItems; operation; test; trueDest; falseDest |] ->
         let operation = (parseOperation operation)
 
         Some(
@@ -63,6 +76,6 @@ let parseRound (block: string[]) =
               Test = parseTest test
               TrueDestination = parseTestOutcomeDest trueDest
               FalseDestination = parseTestOutcomeDest falseDest }
-        )
+        , parseStartingItems startingItems )
     | _ -> None
 

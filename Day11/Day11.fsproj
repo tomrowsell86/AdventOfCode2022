@@ -6,6 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Content Include="input.txt"/>
     <Compile Include="Parsers.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
