@@ -1,18 +1,17 @@
 module Parsers
 open System
 let splitEnum =
-    StringSplitOptions.RemoveEmptyEntries ||| StringSplitOptions.TrimEntries
+    StringSplitOptions.TrimEntries
 
 type Round =
     { Id: char
-      StartingQueue: int[]
       Operation: int -> int
       Test: int -> (bool * int)
       TrueDestination: char
       FalseDestination: char }
 
 let splitInstructionBlocks (input: string) =
-    input.Split(Environment.NewLine, (splitEnum))
+    input.Split(Environment.NewLine + Environment.NewLine, (splitEnum))
 
 let (|Integer|_|) (input: string) =
     let mutable x = 0
@@ -55,13 +54,11 @@ let parseTestOutcomeDest (outcome: string) = Array.last (outcome.ToCharArray())
 
 let parseRound (block: string[]) =
     match block with
-    | [| id; startingItems; operation; test; trueDest; falseDest |] ->
-        let startingItems = parseStartingItems startingItems
+    | [| id; _; operation; test; trueDest; falseDest |] ->
         let operation = (parseOperation operation)
 
         Some(
             { Id = parseId id
-              StartingQueue = startingItems
               Operation = operation
               Test = parseTest test
               TrueDestination = parseTestOutcomeDest trueDest
